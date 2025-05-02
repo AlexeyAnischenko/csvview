@@ -1,6 +1,6 @@
 # CSV Viewer
 
-A powerful, browser-based CSV file viewer with advanced filtering, sorting, and display options. Built with React and Tailwind CSS, running entirely in the browser with no server-side dependencies.
+A powerful, browser-based CSV file viewer with advanced filtering, sorting, and display options, able to handle huge 200K-lines CSV files. Built with React and Tailwind CSS, running entirely in the browser with no server-side dependencies.
 
 ## Features
 
