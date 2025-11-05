@@ -212,6 +212,16 @@
       };
     };
 
+    // Helpers for numeric-aware sorting
+    const isNumericValue = (v) => {
+      if (v === null || v === undefined) return false;
+      const s = String(v).trim();
+      if (s === '' || s.toUpperCase() === 'N/A') return false;
+      const n = Number(s);
+      return Number.isFinite(n);
+    };
+    const toNumber = (v) => Number(String(v).trim());
+
     function App() {
       // Initialize state from URL parameters
       const urlParams = getUrlParams();
@@ -395,7 +405,7 @@
 
       const filteredAndSortedData = useMemo(() => {
         let filtered = [...csvData.rows];
-        const processText = (text) => caseSensitive ? text : text.toLowerCase();
+        const processText = (text) => caseSensitive ? text : String(text).toLowerCase();
 
         if (debouncedAndFilter) {
           const terms = debouncedAndFilter.split(' ').filter(Boolean).map(term => processText(term));
@@ -425,12 +435,40 @@
         }
 
         if (sortColumn !== -1) {
+          // Determine if the column should be treated as numeric: all meaningful values numeric
+          const treatAsNumeric = filtered.every(row => {
+            const v = row[sortColumn];
+            // allow placeholders/empty, but require others to be numeric
+            return v === 'N/A' || String(v).trim() === '' || isNumericValue(v);
+          });
+
           filtered.sort((a, b) => {
             const aVal = a[sortColumn];
             const bVal = b[sortColumn];
-            return sortDirection === 'asc' 
-              ? aVal.localeCompare(bVal)
-              : bVal.localeCompare(aVal);
+
+            if (treatAsNumeric) {
+              const aIsNum = isNumericValue(aVal);
+              const bIsNum = isNumericValue(bVal);
+              if (aIsNum && bIsNum) {
+                const aNum = toNumber(aVal);
+                const bNum = toNumber(bVal);
+                return sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
+              }
+              if (aIsNum !== bIsNum) {
+                // push non-numeric to the end for ascending, to the beginning for descending
+                return (sortDirection === 'asc') ? (aIsNum ? -1 : 1) : (aIsNum ? 1 : -1);
+              }
+              // both non-numeric (e.g., both N/A) -> keep stable-ish using string compare
+              const aStr = String(aVal);
+              const bStr = String(bVal);
+              return sortDirection === 'asc' ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
+            } else {
+              const aStr = caseSensitive ? String(aVal) : String(aVal).toLowerCase();
+              const bStr = caseSensitive ? String(bVal) : String(bVal).toLowerCase();
+              return sortDirection === 'asc' 
+                ? aStr.localeCompare(bStr)
+                : bStr.localeCompare(aStr);
+            }
           });
         }
 
