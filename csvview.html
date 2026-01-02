@@ -837,7 +837,7 @@
                               draggable={false}
                               onClick={(e) => { e.stopPropagation(); toggleCollapse(colIndex); }}
                               className={`ml-auto px-1 py-0.5 text-[10px] rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 ${collapsedCols.has(colIndex) ? 'bg-gray-100 dark:bg-gray-700' : 'bg-transparent'}`}
-                              title={collapsedCols.has(colIndex) ? 'Restore column width' : 'Minimize column to 5 chars'}
+                              title={collapsedCols.has(colIndex) ? `Restore column "${csvData.headers[colIndex]}" width` : `Minimize column "${csvData.headers[colIndex]}" to 5 chars`}
                             >
                               {collapsedCols.has(colIndex) ? 'в†”' : '5ch'}
                             </button>
